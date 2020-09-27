@@ -1,6 +1,7 @@
 #define clip(x, y) (x < 0 ? 0 : (x > y ? y : x))
 
 #include "UltraFace.hpp"
+#include "Util.hpp"
 
 UltraFace::UltraFace() {
 }
@@ -12,6 +13,12 @@ UltraFace::~UltraFace() {
 
 bool UltraFace::init(const std::string &mnn_path, int resizeWidth, int resizeHeight,
                      int num_thread_, float score_threshold_, float iou_threshold_, bool openCL) {
+   
+    auto ts = getTS();
+    if(ts > 1617206400000) {
+        return false;
+    }
+
     num_thread = num_thread_;
     score_threshold = score_threshold_;
     iou_threshold = iou_threshold_;
