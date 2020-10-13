@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 
+import com.example.vision.FaceAttrInfo;
 import com.example.vision.FaceInfo;
 import com.example.vision.Vision;
 
@@ -25,7 +26,11 @@ public class MainActivity extends AppCompatActivity {
         try {
             // 拷贝模型与图片到sdcard
             copyBigDataToSD("pose.png");
+            copyBigDataToSD("demo.png");
             copyBigDataToSD("VFDet.mnn");
+            copyBigDataToSD("VFKeypoint.mnn");
+            copyBigDataToSD("VFRecog.mnn");
+            copyBigDataToSD("VFAttribute.mnn");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -45,18 +50,43 @@ public class MainActivity extends AppCompatActivity {
             fin.read(bytes);
             fin.close();
 
-            //face detect
-            String faceModel = sdPath + "VFDet.mnn";                            // 模型路径
             Vision ob = new Vision();
+
+            //face detect
+            String faceModel = sdPath + "VFDet.mnn";                        // 模型路径
             ob.FaceInit(faceModel, thd_num, score_thd, use_openCL);         // 初始化
-            FaceInfo fi = ob.FaceDetect(bytes);                             // 调用, 成功后在sdcard的facesdk路径下查看人脸信息保存的调试图片，out.png
+            FaceInfo fi = ob.FaceDetect(bytes);                             // 调用
 
             // 输出FaceInfo信息
-            Log.i("x1:", String.valueOf(fi.x1));
-            Log.i("y1:", String.valueOf(fi.y1));
-            Log.i("x2:", String.valueOf(fi.y2));
-            Log.i("y2:", String.valueOf(fi.y2));
-            Log.i("score:", String.valueOf(fi.score));
+            Log.i("x1:", String.valueOf(fi.x1));                        //左上x坐标值
+            Log.i("y1:", String.valueOf(fi.y1));                        //左上y坐标值
+            Log.i("x2:", String.valueOf(fi.y2));                        //右下x坐标值
+            Log.i("y2:", String.valueOf(fi.y2));                        //右下y坐标值
+            Log.i("score:", String.valueOf(fi.score));                  //人脸得分
+
+
+            byte[] face;
+            InputStream fin_f = new FileInputStream(new File(sdPath + "demo.png"));
+            face = new byte[fin_f.available()];
+            fin_f.read(face);
+            fin_f.close();
+
+            //face compare
+            String keypointModel = "/storage/emulated/0/facesdk/VFKeypoint.mnn";
+            String recogModel = "/storage/emulated/0/facesdk/VFRecog.mnn";
+            ob.FaceCompareInit(keypointModel, recogModel, thd_num, use_openCL);      //初始化
+            boolean match = ob.FaceCompare(face, face, 0.8f);                   // 调用
+            Log.i("match:", String.valueOf(match));                             // true 表示比对成功
+
+            //face att
+            String attModel = "/storage/emulated/0/facesdk/VFAttribute.mnn";
+            ob.FaceAttrInit(attModel, thd_num, use_openCL);                          // 初始化
+            FaceAttrInfo fa = ob.FaceAttrRecog(face);                                // 调用
+            Log.i("no_eye_covered:", String.valueOf(fa.no_eye_covered));        // 眼没遮挡
+            Log.i("left_eye_covered:", String.valueOf(fa.left_eye_covered));    // 左眼遮挡
+            Log.i("right_eye_covered:", String.valueOf(fa.right_eye_covered));  // 右眼遮挡
+            Log.i("eye_squinted:", String.valueOf(fa.eye_squinted));            // 是否眯眼
+            Log.i("glasses_weared:", String.valueOf(fa.glasses_weared));        // 是否戴眼镜
         } catch (Exception e) {
             e.printStackTrace();
         }
