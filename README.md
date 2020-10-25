@@ -10,4 +10,4 @@ step 4. 在 build.gradle 中 添加编译过滤, 以及 libs 库路径
                 jniLibs.srcDirs = ['libs']
             }
         }
-step 5. 调用方法在 app/src/main/java/com/example/facedetect/MainActivity.java 中 25～59行
+step 5. 调用方法在 app/src/main/java/com/example/facedetect/MainActivity.java 中 38～89行
